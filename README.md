@@ -31,3 +31,6 @@ Aunque la API esté relativemente moderna, los datos no lo son, algunos con fech
 
 Aprendí que el sitio del gobierno es muy poco útil como API pública. La información es muy difícil de obtener, incluso para uno que se maneja con el computador. Aprendí que streamlit es muy útil para generar MVPs como este.
 
+## Enlace
+
+https://javierberrios-solemne2.streamlit.app/
