@@ -1,0 +1,8 @@
+#streamlit secrets
+.streamlit/secrets.toml
+
+# PDF
+*.pdf
+
+#cache?
+src/__pycache__/
