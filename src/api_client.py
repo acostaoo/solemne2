@@ -13,7 +13,8 @@ def get_token():
     global TOKEN
     response = requests.post(
         'https://api.cne.cl/api/login',
-        json={'email': email, 'password': pw}
+        json={'email': email, 'password': pw},
+        timeout=30,
     )
     response.raise_for_status()
     data = response.json()
@@ -24,18 +25,30 @@ def get_token():
 
 def get_estaciones():
     """Descarga la lista de estaciones desde la API del CNE."""
-    if not TOKEN:
-        get_token()
-    response = requests.get(API_URL, headers={'Authorization': f'Bearer {TOKEN}'})
-    response.raise_for_status()
-    data = response.json()
-    # La API responde 200 con {'status': 'Token is Expired'} al expirar el JWT
-    if not isinstance(data, list):
+    global TOKEN
+    for attempt in range(2):
+        if not TOKEN:
+            get_token()
+        response = requests.get(
+            API_URL,
+            headers={'Authorization': f'Bearer {TOKEN}'},
+            timeout=30,
+        )
+        response.raise_for_status()
+        data = response.json()
+
+        if isinstance(data, list):
+            return data
+
+        # La API responde 200 con un estado de token invalido o expirado.
+        token_status = data.get('status') if isinstance(data, dict) else None
+        token_needs_refresh = token_status in {'Token is Expired', 'Token is Invalid'}
+        if token_needs_refresh and attempt == 0:
+            TOKEN = ''
+            continue
+
         detalle = data.get('status') if isinstance(data, dict) else str(data)
-        raise RuntimeError(
-            f'Respuesta inesperada de la API: {detalle}. '
-            f'¿Renovaste el token en api_client.py?')
-    return data
+        raise RuntimeError(f'Respuesta inesperada de la API: {detalle}')
 
 
 if __name__ == '__main__':
